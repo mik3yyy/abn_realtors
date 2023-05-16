@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "162077080872",
+    "project_id": "abn-realtors",
+    "storage_bucket": "abn-realtors.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:162077080872:android:7be3d21aaf8fa59f6c241d",
+        "android_client_info": {
+          "package_name": "com.abn.abn_realtors"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "162077080872-ivrb9uihbg4u00a7vsjfa2c728mik7hd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB2TPm9Xnzt1nOcodq9g0G6-y9MM4NR33o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "162077080872-ivrb9uihbg4u00a7vsjfa2c728mik7hd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
