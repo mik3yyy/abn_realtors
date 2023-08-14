@@ -1,4 +1,3 @@
-
 import 'package:abn_realtors/authentication_screens/agent/verrifyemail.dart';
 import 'package:abn_realtors/authentication_screens/user/verrifyemail.dart';
 import 'package:abn_realtors/provider/auth_provider.dart';
@@ -19,6 +18,7 @@ import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:network_to_file_image/network_to_file_image.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+
 class FillAgentProfile extends StatefulWidget {
   const FillAgentProfile({Key? key}) : super(key: key);
 
@@ -27,40 +27,41 @@ class FillAgentProfile extends StatefulWidget {
 }
 
 class _FillAgentProfileState extends State<FillAgentProfile> {
-  String? selectedLGA ;
+  String? selectedLGA;
   final TextEditingController textEditingController = TextEditingController();
-  String selectedState =  "Lagos";
+  String selectedState = "Lagos";
   final TextEditingController StateEditingController = TextEditingController();
 
   //Global keys
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final GlobalKey<ScaffoldMessengerState> _scaffoldKey =
-  GlobalKey<ScaffoldMessengerState>();
+      GlobalKey<ScaffoldMessengerState>();
 
 // local var
   String selectedCode = '+234';
   String selectedGender = 'Male';
   final ImagePicker _picker = ImagePicker();
-  String _imageFile ='';
+  String _imageFile = '';
   dynamic _pickedImageError;
 
   //firebase
   String _uid = '';
   CollectionReference customers =
-  FirebaseFirestore.instance.collection('agents');
+      FirebaseFirestore.instance.collection('agents');
 
 //hive
   final abnBox = Hive.box('abn');
 
-bool processing = false;
-@override
+  bool processing = false;
+  @override
   void initState() {
     // TODO: implement initState
     super.initState();
     var authprovider = Provider.of<AuthProvider>(context, listen: false);
 
-    selectedState =  authprovider.location.isNotEmpty? authprovider.location :"Lagos" ;
-    selectedLGA = authprovider.lga.isNotEmpty? authprovider.lga : null;
+    selectedState =
+        authprovider.location.isNotEmpty ? authprovider.location : "Lagos";
+    selectedLGA = authprovider.lga.isNotEmpty ? authprovider.lga : null;
     _imageFile = Provider.of<AuthProvider>(context, listen: false).imageFile;
     selectedGender = Provider.of<AuthProvider>(context, listen: false).gender;
   }
@@ -74,7 +75,6 @@ bool processing = false;
 
     ////////////////////////////////////
     void _pickImageFromCamera() async {
-
       try {
         final pickedImage = await _picker.pickImage(
             source: ImageSource.camera,
@@ -82,16 +82,12 @@ bool processing = false;
             maxWidth: 300,
             imageQuality: 95);
         setState(() {
-
           _imageFile = pickedImage!.path;
           authprovider.imageFile = _imageFile;
-
-
         });
         // if (pickedImage!.path.isNotEmpty){
         //
         // }
-
       } catch (e) {
         setState(() {
           _pickedImageError = e;
@@ -99,6 +95,7 @@ bool processing = false;
         print(_pickedImageError);
       }
     }
+
     void _pickImageFromGallery() async {
       try {
         final pickedImage = await _picker.pickImage(
@@ -106,7 +103,7 @@ bool processing = false;
             maxHeight: 300,
             maxWidth: 300,
             imageQuality: 95);
-        if (pickedImage!.path != null){
+        if (pickedImage!.path != null) {
           setState(() {
             _imageFile = pickedImage.path;
             authprovider.imageFile = _imageFile;
@@ -124,7 +121,6 @@ bool processing = false;
     /////////////////////////////////////////////////////
     final List<String> items = Constants.countriesCode.values.toList();
     final List<String> genders = [
-
       'Male',
       'Female',
       'Others',
@@ -143,9 +139,7 @@ bool processing = false;
                     item,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold
-                    ),
+                        fontSize: 14, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -161,6 +155,7 @@ bool processing = false;
       }
       return _menuItems;
     }
+
     List<double> _getCustomItemsHeights() {
       List<double> _itemsHeights = [];
       for (var i = 0; i < (items.length * 2) - 1; i++) {
@@ -174,6 +169,7 @@ bool processing = false;
       }
       return _itemsHeights;
     }
+
     List<double> _getCustomGenderHeights() {
       List<double> _itemsHeights = [];
       for (var i = 0; i < (genders.length * 2) - 1; i++) {
@@ -187,30 +183,26 @@ bool processing = false;
       }
       return _itemsHeights;
     }
+
     ////////////////////////////////////////////////
     void Proceed() async {
-
       if (_formKey.currentState!.validate() && selectedLGA!.isNotEmpty) {
-
-        if (_imageFile.isNotEmpty){
-
+        if (_imageFile.isNotEmpty) {
           authprovider.gender = selectedGender;
           authprovider.selectedCountryCode = selectedCode;
           authprovider.imageFile = _imageFile;
 
-          if (authprovider.phonenumber[0] == '0'){
-
-            authprovider.phonenumber=   authprovider.phonenumber.substring(1);
+          if (authprovider.phonenumber[0] == '0') {
+            authprovider.phonenumber = authprovider.phonenumber.substring(1);
             print(authprovider.phonenumber);
-          }
-          else {
-            authprovider.phonenumber=  authprovider.phonenumber;
+          } else {
+            authprovider.phonenumber = authprovider.phonenumber;
           }
           setState(() {
             processing = true;
           });
           try {
-            if(FirebaseAuth.instance.currentUser == null ){
+            if (FirebaseAuth.instance.currentUser == null) {
               await FirebaseAuth.instance.createUserWithEmailAndPassword(
                   email: authprovider.email, password: authprovider.password);
             }
@@ -218,11 +210,8 @@ bool processing = false;
                 .FirebaseStorage.instance
                 .ref('agent-images/${authprovider.email}.jpg');
 
-
-
             await ref.putFile(File(_imageFile));
             authprovider.imageFile = await ref.getDownloadURL();
-
 
             _uid = FirebaseAuth.instance.currentUser!.uid;
             setState(() {
@@ -231,28 +220,23 @@ bool processing = false;
 
             await customers.doc(_uid).set(authprovider.getuser());
 
-
-            abnBox.put("user",authprovider.getuser());
-
+            abnBox.put("user", authprovider.getuser());
 
             ///////////////////////////////////////////
-            Navigator.pushNamed(context,VerifyAgentEmail.id);
-
-
+            Navigator.pushNamed(context, VerifyAgentEmail.id);
           } on FirebaseAuthException catch (e) {
-
-
             if (e.code == 'weak-password') {
               setState(() {
                 processing = false;
               });
-              MyMessageHandler.showSnackBar(_scaffoldKey, 'The password provided is too weak.');
-            }
-            else if (e.code == 'email-already-in-use') {
+              MyMessageHandler.showSnackBar(
+                  _scaffoldKey, 'The password provided is too weak.');
+            } else if (e.code == 'email-already-in-use') {
               setState(() {
                 processing = false;
               });
-              MyMessageHandler.showSnackBar(_scaffoldKey, 'The account already exists for that email.');
+              MyMessageHandler.showSnackBar(
+                  _scaffoldKey, 'The account already exists for that email.');
             } else {
               setState(() {
                 processing = false;
@@ -260,20 +244,17 @@ bool processing = false;
               MyMessageHandler.showSnackBar(_scaffoldKey, e.toString());
             }
           }
-
         } else {
-
-          MyMessageHandler.showSnackBar(_scaffoldKey, "Select a profile picture 🌄");
-
+          MyMessageHandler.showSnackBar(
+              _scaffoldKey, "Select a profile picture 🌄");
         }
-
       } else {
-        MyMessageHandler.showSnackBar(_scaffoldKey, "There seems to be an issue 😟");
+        MyMessageHandler.showSnackBar(
+            _scaffoldKey, "There seems to be an issue 😟");
       }
     }
-      List<String>? state = Constants.statesMap[selectedState]!.toList();
 
-
+    List<String>? state = Constants.statesMap[selectedState]!.toList();
 
     return ScaffoldMessenger(
       key: _scaffoldKey,
@@ -283,15 +264,20 @@ bool processing = false;
           backgroundColor: listingprovider.getBackgroundColor(),
           elevation: 0,
           leading: IconButton(
-            onPressed: () { Navigator.pop(context); },
-            icon: Icon(Icons.chevron_left,color: listingprovider.getForegroundColor(),size: 35,),
-
-          ),
-          title: Text('Fill your profile',
-              style: TextStyle(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: Icon(
+              Icons.chevron_left,
               color: listingprovider.getForegroundColor(),
-
+              size: 35,
+            ),
           ),
+          title: Text(
+            'Fill your profile',
+            style: TextStyle(
+              color: listingprovider.getForegroundColor(),
+            ),
           ),
         ),
         body: SingleChildScrollView(
@@ -305,27 +291,25 @@ bool processing = false;
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-
                     CircleAvatar(
                       radius: 50,
                       backgroundColor: Colors.grey.shade400,
                       backgroundImage: _imageFile.isEmpty
                           ? null
-                          :  FileImage(File(_imageFile)),
+                          : FileImage(File(_imageFile)),
                       child: _imageFile.isEmpty
-                          ? Icon(Icons.person, size: 60, color: listingprovider.getBackgroundColor())
+                          ? Icon(Icons.person,
+                              size: 60,
+                              color: listingprovider.getBackgroundColor())
                           : Container(),
-
-
-
                     ),
-
-
-                    SizedBox(width: 20,),
+                    SizedBox(
+                      width: 20,
+                    ),
                     Column(
                       children: [
                         Container(
-                          decoration:  BoxDecoration(
+                          decoration: BoxDecoration(
                               color: Constants.primaryColor,
                               borderRadius: BorderRadius.only(
                                   topLeft: Radius.circular(15),
@@ -344,7 +328,7 @@ bool processing = false;
                           height: 6,
                         ),
                         Container(
-                          decoration:  BoxDecoration(
+                          decoration: BoxDecoration(
                               color: Constants.primaryColor,
                               borderRadius: BorderRadius.only(
                                   bottomLeft: Radius.circular(15),
@@ -363,79 +347,72 @@ bool processing = false;
                     ),
                   ],
                 ),
-                SizedBox(height: 30,),
-
+                SizedBox(
+                  height: 30,
+                ),
                 Form(
                   key: _formKey,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Full name',
-                      style: TextStyle(
-                        color: listingprovider.getForegroundColor()
-                      ),
+                      Text(
+                        'Full name',
+                        style: TextStyle(
+                            color: listingprovider.getForegroundColor()),
                       ),
                       Padding(
-                        padding: EdgeInsets.only(top: 5,bottom: 15),
+                        padding: EdgeInsets.only(top: 5, bottom: 15),
                         child: TextFormField(
-                          initialValue: authprovider.fullname,
-                          onChanged: (String ? value){
-                            authprovider.fullname = value!;
-                          },
-                            validator: (String? value){
-                            if (value!.isEmpty){
-                              return 'enter your full name';
-                            } else {
-                              return null;
-                            }
+                            initialValue: authprovider.fullname,
+                            onChanged: (String? value) {
+                              authprovider.fullname = value!;
+                            },
+                            validator: (String? value) {
+                              if (value!.isEmpty) {
+                                return 'enter your full name';
+                              } else {
+                                return null;
+                              }
                             },
                             style: TextStyle(
-                                color: listingprovider.getForegroundColor()
-                            ),
+                                color: listingprovider.getForegroundColor()),
                             decoration: Constants.textFormDecoration.copyWith(
-
                               hintText: 'Okpechi Michael',
                               enabledBorder: OutlineInputBorder(
-
-                                  borderSide: BorderSide(color:  listingprovider.getForegroundColor(),),
+                                borderSide: BorderSide(
+                                  color: listingprovider.getForegroundColor(),
+                                ),
                                 borderRadius: BorderRadius.circular(20),
-
                               ),
-                            )
-                        ),
+                            )),
                       ),
-                      Text('Phone number',
+                      Text(
+                        'Phone number',
                         style: TextStyle(
-                            color: listingprovider.getForegroundColor()
-                        ),
+                            color: listingprovider.getForegroundColor()),
                       ),
                       Padding(
-                        padding: EdgeInsets.only(top: 5,bottom: 15),
+                        padding: EdgeInsets.only(top: 5, bottom: 15),
                         child: TextFormField(
-                          initialValue: authprovider.phonenumber,
-                          validator: (String? value ){
-                            if (value!.isEmpty){
-
-                              return 'enter your phone number';
-                            } else if  (value.length < 10){
-                              return 'invalid phone number ';
-                            }
-
-                            else {
-                              return null;
-                            }
-
-                          },
+                            initialValue: authprovider.phonenumber,
+                            validator: (String? value) {
+                              if (value!.isEmpty) {
+                                return 'enter your phone number';
+                              } else if (value.length < 10) {
+                                return 'invalid phone number ';
+                              } else {
+                                return null;
+                              }
+                            },
                             style: TextStyle(
-                                color: listingprovider.getForegroundColor()
-                            ),
-                            onChanged: (String? value){
-                            authprovider.phonenumber = value!;
-
+                                color: listingprovider.getForegroundColor()),
+                            onChanged: (String? value) {
+                              authprovider.phonenumber = value!;
                             },
                             decoration: Constants.textFormDecoration.copyWith(
-                              prefixIconColor: listingprovider.getForegroundColor(),
+                              prefixIconColor:
+                                  listingprovider.getForegroundColor(),
                               prefixIcon: DropdownButtonHideUnderline(
                                 child: DropdownButton2(
                                   hint: Text(
@@ -447,14 +424,14 @@ bool processing = false;
                                   ),
                                   items: items
                                       .map((item) => DropdownMenuItem<String>(
-                                    value: item,
-                                    child: Text(
-                                      item,
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ))
+                                            value: item,
+                                            child: Text(
+                                              item,
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ))
                                       .toList(),
                                   value: selectedCode,
                                   onChanged: (value) {
@@ -467,7 +444,6 @@ bool processing = false;
                                     width: 100,
                                   ),
                                   alignment: AlignmentDirectional.center,
-
                                   menuItemStyleData: const MenuItemStyleData(
                                     height: 40,
                                   ),
@@ -475,138 +451,127 @@ bool processing = false;
                               ),
                               hintText: 'Phone number',
                               enabledBorder: OutlineInputBorder(
-
-                                  borderSide: BorderSide(color:  listingprovider.getForegroundColor(),),
+                                borderSide: BorderSide(
+                                  color: listingprovider.getForegroundColor(),
+                                ),
                                 borderRadius: BorderRadius.circular(20),
-
                               ),
-                            )
-                        ),
+                            )),
                       ),
-                      Text('Gender',
+                      Text(
+                        'Gender',
                         style: TextStyle(
-                            color: listingprovider.getForegroundColor()
-                        ),
+                            color: listingprovider.getForegroundColor()),
                       ),
                       Padding(
-
-                        padding: EdgeInsets.only(top: 5,bottom: 15),
+                        padding: EdgeInsets.only(top: 5, bottom: 15),
                         child: TextFormField(
                             decoration: Constants.textFormDecoration.copyWith(
-
-                              prefixIcon: DropdownButtonHideUnderline(
-                                child: DropdownButton2(
-                                  hint: Text(
-                                    'Select Item',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Theme.of(context).hintColor,
-                                    ),
-                                  ),
-                                  items: genders
-                                      .map((item) => DropdownMenuItem<String>(
-                                    value: item,
-                                    child: Text(
-                                      item,
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ))
-                                      .toList(),
-                                  value: selectedGender,
-                                  onChanged: (value) {
-                                    setState(() {
-
-
-                                      selectedGender = value as String;
-                                      authprovider.gender = selectedGender;
-                                      print(authprovider.gender);
-                                    });
-                                  },
-                                  alignment: AlignmentDirectional.center,
-
-                                  buttonStyleData:  ButtonStyleData(
-                                    height: 40,
-                                    width: MediaQuery.of(context).size.width,
-                                  ),
-                                  menuItemStyleData: const MenuItemStyleData(
-                                    height: 40,
-                                  ),
+                          prefixIcon: DropdownButtonHideUnderline(
+                            child: DropdownButton2(
+                              hint: Text(
+                                'Select Item',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Theme.of(context).hintColor,
                                 ),
                               ),
-                              hintText: 'Select Gender',
-                              enabledBorder: OutlineInputBorder(
-
-                                  borderSide: BorderSide(color:  listingprovider.getForegroundColor(),),
-                                borderRadius: BorderRadius.circular(20),
-
+                              items: genders
+                                  .map((item) => DropdownMenuItem<String>(
+                                        value: item,
+                                        child: Text(
+                                          item,
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ))
+                                  .toList(),
+                              value: selectedGender,
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedGender = value as String;
+                                  authprovider.gender = selectedGender;
+                                  print(authprovider.gender);
+                                });
+                              },
+                              alignment: AlignmentDirectional.center,
+                              buttonStyleData: ButtonStyleData(
+                                height: 40,
+                                width: MediaQuery.of(context).size.width,
                               ),
-                            )
-                        ),
+                              menuItemStyleData: const MenuItemStyleData(
+                                height: 40,
+                              ),
+                            ),
+                          ),
+                          hintText: 'Select Gender',
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: listingprovider.getForegroundColor(),
+                            ),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        )),
                       ),
-                      Text('State',
-                      style: TextStyle(
-                        color: listingprovider.getForegroundColor()
-                      ),
+                      Text(
+                        'State',
+                        style: TextStyle(
+                            color: listingprovider.getForegroundColor()),
                       ),
                       Padding(
-                        padding: EdgeInsets.only(top: 5,bottom: 15),
+                        padding: EdgeInsets.only(top: 5, bottom: 15),
                         child: TextFormField(
-                          initialValue: authprovider.location,
-
-                            onChanged: (String ? value){
+                            initialValue: authprovider.location,
+                            onChanged: (String? value) {
                               authprovider.location = value!;
                             },
-
                             style: TextStyle(
-                                color: listingprovider.getForegroundColor()
-                            ),
+                                color: listingprovider.getForegroundColor()),
                             decoration: Constants.textFormDecoration.copyWith(
-                              prefixIcon:  DropdownButtonHideUnderline(
+                              prefixIcon: DropdownButtonHideUnderline(
                                 child: DropdownButton2<String>(
                                   isExpanded: true,
                                   hint: Text(
                                     'Select Item',
                                     style: TextStyle(
-
                                       fontSize: 14,
                                       color: Theme.of(context).hintColor,
                                     ),
                                   ),
                                   items: Constants.statesMap.keys
                                       .map((item) => DropdownMenuItem(
-                                    value: item,
-                                    child: Text(
-                                      item,
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ))
+                                            value: item,
+                                            child: Text(
+                                              item,
+                                              textAlign: TextAlign.center,
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ))
                                       .toList(),
                                   value: selectedState,
                                   onChanged: (value) {
                                     setState(() {
-                                      state = Constants.statesMap[value]!.toList();
+                                      state =
+                                          Constants.statesMap[value]!.toList();
                                       print(state);
                                       selectedLGA = null;
-                                      authprovider.lga='';
+                                      authprovider.lga = '';
 
                                       selectedState = value as String;
                                       authprovider.location = value;
-
                                     });
                                   },
                                   alignment: AlignmentDirectional.center,
 
-                                  buttonStyleData:  ButtonStyleData(
+                                  buttonStyleData: ButtonStyleData(
                                     padding: EdgeInsets.only(left: 10),
                                     height: 40,
                                     width: MediaQuery.of(context).size.width,
                                   ),
-                                  dropdownStyleData:  DropdownStyleData(
+                                  dropdownStyleData: DropdownStyleData(
                                     maxHeight: 200,
                                   ),
                                   menuItemStyleData: const MenuItemStyleData(
@@ -629,20 +594,25 @@ bool processing = false;
                                         controller: StateEditingController,
                                         decoration: InputDecoration(
                                           isDense: true,
-                                          contentPadding: const EdgeInsets.symmetric(
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
                                             horizontal: 10,
                                             vertical: 8,
                                           ),
                                           hintText: 'Search for an item...',
-                                          hintStyle: const TextStyle(fontSize: 12),
+                                          hintStyle:
+                                              const TextStyle(fontSize: 12),
                                           border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(8),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
                                           ),
                                         ),
                                       ),
                                     ),
                                     searchMatchFn: (item, searchValue) {
-                                      return (item.value.toString().contains(searchValue));
+                                      return (item.value
+                                          .toString()
+                                          .contains(searchValue));
                                     },
                                   ),
                                   //This to clear the search value when you close the menu
@@ -656,23 +626,21 @@ bool processing = false;
                               hintText: 'State',
                               enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(20),
-
-                                  borderSide: BorderSide(color:  listingprovider.getForegroundColor(),)
-                              ),
-                            )
-                        ),
+                                  borderSide: BorderSide(
+                                    color: listingprovider.getForegroundColor(),
+                                  )),
+                            )),
                       ),
-                      Text('LGA',
+                      Text(
+                        'LGA',
                         style: TextStyle(
-                            color: listingprovider.getForegroundColor()
-                        ),
+                            color: listingprovider.getForegroundColor()),
                       ),
                       Padding(
-                        padding: EdgeInsets.only(top: 5,bottom: 15),
+                        padding: EdgeInsets.only(top: 5, bottom: 15),
                         child: TextFormField(
-                          initialValue: authprovider.lga,
-
-                            onChanged: (String ? value){
+                            initialValue: authprovider.lga,
+                            onChanged: (String? value) {
                               authprovider.lga = value!;
                             },
                             // validator: (String? value){
@@ -683,8 +651,7 @@ bool processing = false;
                             //   }
                             // },
                             style: TextStyle(
-                                color: listingprovider.getForegroundColor()
-                            ),
+                                color: listingprovider.getForegroundColor()),
                             decoration: Constants.textFormDecoration.copyWith(
                               prefixIcon: DropdownButtonHideUnderline(
                                 child: DropdownButton2<String>(
@@ -692,22 +659,21 @@ bool processing = false;
                                   hint: Text(
                                     'Select Item',
                                     style: TextStyle(
-
                                       fontSize: 14,
                                       color: Theme.of(context).hintColor,
                                     ),
                                   ),
-                                  items:
-                                  state?.map((item) => DropdownMenuItem(
-                                    value: item,
-                                    child: Text(
-                                      item,
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ))
+                                  items: state
+                                      ?.map((item) => DropdownMenuItem(
+                                            value: item,
+                                            child: Text(
+                                              item,
+                                              textAlign: TextAlign.center,
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ))
                                       .toList(),
                                   value: selectedLGA,
                                   onChanged: (value) {
@@ -718,12 +684,12 @@ bool processing = false;
                                   },
                                   alignment: AlignmentDirectional.center,
 
-                                  buttonStyleData:  ButtonStyleData(
+                                  buttonStyleData: ButtonStyleData(
                                     padding: EdgeInsets.only(left: 10),
                                     height: 40,
                                     width: MediaQuery.of(context).size.width,
                                   ),
-                                  dropdownStyleData:  DropdownStyleData(
+                                  dropdownStyleData: DropdownStyleData(
                                     maxHeight: 200,
                                   ),
                                   menuItemStyleData: const MenuItemStyleData(
@@ -746,20 +712,25 @@ bool processing = false;
                                         controller: textEditingController,
                                         decoration: InputDecoration(
                                           isDense: true,
-                                          contentPadding: const EdgeInsets.symmetric(
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
                                             horizontal: 10,
                                             vertical: 8,
                                           ),
                                           hintText: 'Search for an item...',
-                                          hintStyle: const TextStyle(fontSize: 12),
+                                          hintStyle:
+                                              const TextStyle(fontSize: 12),
                                           border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(8),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
                                           ),
                                         ),
                                       ),
                                     ),
                                     searchMatchFn: (item, searchValue) {
-                                      return (item.value.toString().contains(searchValue));
+                                      return (item.value
+                                          .toString()
+                                          .contains(searchValue));
                                     },
                                   ),
                                   //This to clear the search value when you close the menu
@@ -770,49 +741,47 @@ bool processing = false;
                                   },
                                 ),
                               ),
-
                               hintText: 'Local Government Area',
                               enabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color:  listingprovider.getForegroundColor(),),
+                                borderSide: BorderSide(
+                                  color: listingprovider.getForegroundColor(),
+                                ),
                                 borderRadius: BorderRadius.circular(20),
-
                               ),
-                            )
-                        ),
+                            )),
                       ),
                       Opacity(
-                        opacity: processing? 0.5 : 1,
+                        opacity: processing ? 0.5 : 1,
                         child: MaterialButton(
-                          onPressed: (){
+                          onPressed: () {
                             Proceed();
-
                           },
                           padding: const EdgeInsets.all(0.0),
                           child: Container(
                             height: 50,
-                            decoration:  BoxDecoration(
+                            decoration: BoxDecoration(
                                 color: Constants.primaryColor,
-                                border: Border.all(color: Constants.primaryColor),
-                                borderRadius: BorderRadius.circular(8)
-                            ),
-                            child:  Stack(
-
+                                border:
+                                    Border.all(color: Constants.primaryColor),
+                                borderRadius: BorderRadius.circular(8)),
+                            child: Stack(
                               children: [
                                 Center(
-                                  child: Text("Proceed",
+                                  child: Text(
+                                    "Proceed",
                                     style: TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.w700,
-                                        fontSize: 16
-                                    ),
+                                        fontSize: 16),
                                   ),
                                 ),
-                                if(processing)
+                                if (processing)
                                   Positioned(
                                     right: 10,
                                     top: 10,
                                     child: LoadingAnimationWidget.hexagonDots(
-                                      color: listingprovider.getForegroundColor(),
+                                      color:
+                                          listingprovider.getForegroundColor(),
                                       // rightDotColor: Constant.generalColor,
                                       size: 20,
                                     ),
@@ -822,15 +791,12 @@ bool processing = false;
                           ),
                         ),
                       ),
-
-                      SizedBox(height: 100,)
-
-
-
+                      SizedBox(
+                        height: 100,
+                      )
                     ],
                   ),
                 ),
-
               ],
             ),
           ),

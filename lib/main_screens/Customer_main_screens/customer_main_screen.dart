@@ -1,5 +1,3 @@
-import 'package:abn_realtors/main_screens/Customer_main_screens/profile_screen/profile_screen.dart';
-
 import 'package:abn_realtors/settings/constants.dart';
 import 'package:awesome_bottom_bar/awesome_bottom_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -9,8 +7,10 @@ import 'package:provider/provider.dart';
 import 'package:water_drop_nav_bar/water_drop_nav_bar.dart';
 import '../../provider/auth_provider.dart';
 import '../../provider/main_provider.dart';
-import 'Home_screen/home_screen.dart';
-
+import '../Home_Screen/home_screen.dart';
+import '../Profile_screen/profile_screen.dart';
+import '../Search_Screen/search_screen.dart';
+import '../messages_screen/messages_screen.dart';
 
 class CustomerMainScreen extends StatefulWidget {
   const CustomerMainScreen({Key? key}) : super(key: key);
@@ -22,21 +22,19 @@ class CustomerMainScreen extends StatefulWidget {
 }
 
 class _CustomerMainScreenState extends State<CustomerMainScreen> {
-
   var abn = Hive.box('abn');
   int _selectedIndex = 0;
 
-  List<Widget> mainscreens=[
+  List<Widget> mainscreens = [
     HomeScreen(),
-    Center(child: Text('Search Screen'),),
-    Center(child: Text('Messages Screen'),),
-   ProfileScreen()
+    SearchScreen(),
+    MessagesScreen(),
+    ProfileScreen()
   ];
   final GlobalKey<ScaffoldMessengerState> _scaffoldKey =
-  GlobalKey<ScaffoldMessengerState>();
+      GlobalKey<ScaffoldMessengerState>();
   @override
   Widget build(BuildContext context) {
-
     var authprovider = Provider.of<AuthProvider>(context, listen: false);
     var listingprovider = Provider.of<MainProvider>(context, listen: true);
 
@@ -51,35 +49,35 @@ class _CustomerMainScreenState extends State<CustomerMainScreen> {
         ),
 
         bottomNavigationBar: BottomBarDivider(
-
-        items: const  [
-          TabItem(
-            icon: Icons.home,
-            // title: 'Home',
-          ),
-          TabItem(
-            icon: Icons.search_sharp,
-            // title: 'Search',
-          ),
-          TabItem(
-            icon: Icons.mail_outline_rounded,
-            // title: 'Messaages',
-          ),
-          TabItem(
-            icon: Icons.person_outline,
-            // title: 'Profile',
-          ),
-
-        ],
-        backgroundColor:listingprovider.getBackgroundColor(),
-        color: listingprovider.lightMode? Color(0xFFB0B0B0) : listingprovider.getForegroundColor(),
-        iconSize: 27,
-        colorSelected: Constants.primaryColor,
-        indexSelected: _selectedIndex,
-        // paddingVertical: 24,
-        onTap: (int index) => setState(() {
-           _selectedIndex = index;
-         }),
+          items: const [
+            TabItem(
+              icon: Icons.home,
+              // title: 'Home',
+            ),
+            TabItem(
+              icon: Icons.search_sharp,
+              // title: 'Search',
+            ),
+            TabItem(
+              icon: Icons.mail_outline_rounded,
+              // title: 'Messaages',
+            ),
+            TabItem(
+              icon: Icons.person_outline,
+              // title: 'Profile',
+            ),
+          ],
+          backgroundColor: listingprovider.getBackgroundColor(),
+          color: listingprovider.lightMode
+              ? Color(0xFFB0B0B0)
+              : listingprovider.getForegroundColor(),
+          iconSize: 27,
+          colorSelected: Constants.primaryColor,
+          indexSelected: _selectedIndex,
+          // paddingVertical: 24,
+          onTap: (int index) => setState(() {
+            _selectedIndex = index;
+          }),
         ),
         // bottomNavigationBar: BottomNavigationBar(
         //   backgroundColor:  listingprovider.getBackgroundColor(),
@@ -114,9 +112,7 @@ class _CustomerMainScreenState extends State<CustomerMainScreen> {
         //     });
         //   },
         // )
-
       ),
     );
-
   }
 }

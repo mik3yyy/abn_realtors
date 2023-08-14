@@ -1,4 +1,6 @@
 import 'package:abn_realtors/authentication_screens/user/Login.dart';
+import 'package:abn_realtors/main_screens/Profile_screen/Edit%20profile/edit_profile.dart';
+import 'package:abn_realtors/main_screens/Profile_screen/saved_property/saved_property.dart';
 
 import 'package:abn_realtors/settings/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -9,13 +11,12 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 
-import '../../../onboarding_screens/welcome_screen.dart';
-import '../../../provider/auth_provider.dart';
-import '../../../provider/main_provider.dart';
-import '../../../utils/bottom_sheet.dart';
+import '../../onboarding_screens/welcome_screen.dart';
+import '../../provider/auth_provider.dart';
+import '../../provider/main_provider.dart';
+import '../../utils/bottom_sheet.dart';
 
-import 'Edit profile/edit_profile.dart';
-import 'button_tile.dart';
+import '../../utils/button_tile.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -103,6 +104,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               child: Image.network(
                                 authprovider.imageFile,
                                 fit: BoxFit.fill,
+                                loadingBuilder:
+                                    (context, child, loadingProgress) {
+                                  return Container(
+                                    decoration:
+                                        BoxDecoration(color: Colors.grey),
+                                    child: child,
+                                  );
+                                },
+                                errorBuilder: (context, object, error) {
+                                  return Container(
+                                    decoration:
+                                        BoxDecoration(color: Colors.grey),
+                                  );
+                                },
                               )),
                         ),
                         SizedBox(
@@ -137,7 +152,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => EditProfile()));
+                                    builder: (context) =>
+                                        const AgentEditProfile()));
                           },
                         ),
                         SizedBox(
@@ -154,7 +170,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               color: listingprovider.lightMode
                                   ? null
                                   : listingprovider.getForegroundColor()),
-                          onTap: () {},
+                          onTap: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => SavedProperties()));
+                          },
                         ),
                         SizedBox(
                           height: 10,

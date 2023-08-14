@@ -7,23 +7,23 @@ import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../provider/auth_provider.dart';
-import '../../../../provider/main_provider.dart';
-import '../../../../utils/bottom_sheet.dart';
-import '../../../../settings/constants.dart';
+import '../../../provider/auth_provider.dart';
+import '../../../provider/main_provider.dart';
+import '../../../utils/bottom_sheet.dart';
+import '../../../settings/constants.dart';
 
 import 'dart:io';
 
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 
-class EditProfile extends StatefulWidget {
-  const EditProfile({Key? key}) : super(key: key);
+class AgentEditProfile extends StatefulWidget {
+  const AgentEditProfile({Key? key}) : super(key: key);
 
   @override
-  State<EditProfile> createState() => _EditProfileState();
+  State<AgentEditProfile> createState() => _AgentEditProfileState();
 }
 
-class _EditProfileState extends State<EditProfile> {
+class _AgentEditProfileState extends State<AgentEditProfile> {
   final ImagePicker _picker = ImagePicker();
   String _imageFile = '';
   dynamic _pickedImageError;
@@ -60,7 +60,7 @@ class _EditProfileState extends State<EditProfile> {
   //firebase
   String _uid = '';
   CollectionReference customers =
-      FirebaseFirestore.instance.collection('customers');
+      FirebaseFirestore.instance.collection('agents');
   final List<String> items = Constants.countriesCode.values.toList();
   final List<String> genders = [
     'Male',
@@ -194,7 +194,7 @@ class _EditProfileState extends State<EditProfile> {
             ),
           ),
           title: Text(
-            "Edit Profile",
+            "Edit  Agent Profile",
             style: TextStyle(color: listingprovider.getForegroundColor()),
           ),
         ),
@@ -362,55 +362,59 @@ class _EditProfileState extends State<EditProfile> {
                           padding: EdgeInsets.only(top: 5, bottom: 15),
                           child: TextFormField(
                               decoration: Constants.textFormDecoration.copyWith(
-                                  prefixIcon: DropdownButtonHideUnderline(
-                                    child: DropdownButton2(
-                                      hint: Text(
-                                        'Select Item',
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          color: Theme.of(context).hintColor,
-                                        ),
-                                      ),
-                                      items: genders
-                                          .map((item) =>
-                                              DropdownMenuItem<String>(
-                                                value: item,
-                                                child: Text(
-                                                  item,
-                                                  style: const TextStyle(
-                                                    fontSize: 14,
-                                                  ),
-                                                ),
-                                              ))
-                                          .toList(),
-                                      alignment: AlignmentDirectional.center,
-                                      value: selectedGender,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          selectedGender = value as String;
-                                          print(authprovider.gender);
-                                        });
-                                      },
-                                      buttonStyleData: ButtonStyleData(
-                                        height: 40,
-                                        width:
-                                            MediaQuery.of(context).size.width,
-                                      ),
-                                      menuItemStyleData:
-                                          const MenuItemStyleData(
-                                        height: 40,
-                                      ),
-                                    ),
+                            prefixIcon: DropdownButtonHideUnderline(
+                              child: DropdownButton2(
+                                hint: Text(
+                                  'Select Item',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Theme.of(context).hintColor,
                                   ),
-                                  hintText: 'SELECT Gender',
-                                  hintStyle: TextStyle(
-                                      color:
-                                          listingprovider.getForegroundColor())
-                                  // enabledBorder: OutlineInputBorder(
-                                  //
-                                  //     borderSide: BorderSide(color:  listingprovider.getForegroundColor(),)
-                                  // ),
-                                  )),
+                                ),
+                                alignment: AlignmentDirectional.center,
+                                style: TextStyle(
+                                    color:
+                                        listingprovider.getForegroundColor()),
+                                items: genders
+                                    .map((item) => DropdownMenuItem<String>(
+                                          value: item,
+                                          child: Text(
+                                            item,
+                                            style: TextStyle(
+                                                fontSize: 14,
+                                                color: listingprovider
+                                                    .getForegroundColor()),
+                                          ),
+                                        ))
+                                    .toList(),
+                                value: selectedGender,
+                                onChanged: (value) {
+                                  setState(() {
+                                    selectedGender = value as String;
+                                    print(authprovider.gender);
+                                  });
+                                },
+                                dropdownStyleData: DropdownStyleData(
+                                    decoration: BoxDecoration(
+                                  color: listingprovider.lightMode
+                                      ? Colors.white
+                                      : Colors.black,
+                                )),
+                                buttonStyleData: ButtonStyleData(
+                                  height: 40,
+                                  width: MediaQuery.of(context).size.width,
+                                ),
+                                menuItemStyleData: const MenuItemStyleData(
+                                  height: 40,
+                                ),
+                              ),
+                            ),
+                            hintText: 'Select Gender',
+                            // enabledBorder: OutlineInputBorder(
+                            //
+                            //     borderSide: BorderSide(color:  listingprovider.getForegroundColor(),)
+                            // ),
+                          )),
                         ),
                         Text(
                           'State',
@@ -512,7 +516,7 @@ class _EditProfileState extends State<EditProfile> {
                                               firebase_storage
                                                   .FirebaseStorage.instance
                                                   .ref(
-                                                      'cust-images/${authprovider.email}.jpg');
+                                                      'agent-images/${authprovider.email}.jpg');
 
                                           await ref.putFile(File(_imageFile));
 

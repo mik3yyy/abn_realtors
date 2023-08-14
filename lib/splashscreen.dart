@@ -1,4 +1,6 @@
 import 'package:abn_realtors/provider/auth_provider.dart';
+import 'package:abn_realtors/provider/favourite_provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
@@ -10,81 +12,88 @@ import 'onboarding_screens/welcome_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
- static String id = "splash_sceer";
+  static String id = "splash_sceer";
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with
-    SingleTickerProviderStateMixin{
-  AnimationController ?controller;
-  Animation ?rotationX;
-  Animation ?rotationY;
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
+  AnimationController? controller;
+  Animation? rotationX;
+  Animation? rotationY;
   bool hidden = true;
   @override
   void initState() {
     super.initState();
 
-    controller =  AnimationController(vsync: this, duration: Duration(seconds: 3));
+    controller =
+        AnimationController(vsync: this, duration: Duration(seconds: 3));
 
     rotationX = Tween<double>(begin: pi / 3, end: 0.0).animate(controller!);
-    rotationY = Tween<double>(begin:  -pi / 4, end: 0.0).animate(controller!);
+    rotationY = Tween<double>(begin: -pi / 4, end: 0.0).animate(controller!);
 
     controller!.forward();
     controller!.addStatusListener((status) {});
     controller!.addListener(() {
-
       setState(() {});
     });
     var authprovider = Provider.of<AuthProvider>(context, listen: false);
-    Future.delayed(Duration(seconds: 5), (){
+    Future.delayed(Duration(seconds: 5), () {
       initPrefs(context);
-    }). then((value) {
-
-      Navigator.pushReplacementNamed(context, authprovider.email.isNotEmpty? authprovider.agent?AgentMainScreen.id :  CustomerMainScreen.id : WelcomScreen.id,);
+    }).then((value) {
+      Navigator.pushReplacementNamed(
+        context,
+        authprovider.email.isNotEmpty
+            ? authprovider.agent
+                ? AgentMainScreen.id
+                : CustomerMainScreen.id
+            : WelcomScreen.id,
+      );
     });
   }
 
-  initPrefs(BuildContext context ) async {
-
+  initPrefs(BuildContext context) async {
     var authprovider = Provider.of<AuthProvider>(context, listen: false);
+
+    CollectionReference favouriteList =
+        FirebaseFirestore.instance.collection("favourite");
+    var favouriteProvier =
+        Provider.of<FavoriteProvider>(context, listen: false);
 
     var box = Hive.box('abn');
 
-    if(box.get('user')  != null){
-      print(box.get('user').toString());
-      authprovider.fillData(box.get('user') );
-
+    if (box.get('user') != null) {
+      authprovider.fillData(box.get('user'));
     }
+    DocumentSnapshot<Object?> list =
+        await favouriteList.doc(authprovider.email).get();
 
+    if (list.data() != null) {
+      List<String>? newList =
+          (list.get("list") as List).map((item) => item as String).toList();
 
-
-
+      favouriteProvier.fillData(newList);
+    }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.pink,
-
       body: Container(
-
-
           decoration: BoxDecoration(
             gradient: LinearGradient(
-
               begin: Alignment.topRight,
               end: Alignment.bottomLeft,
               stops: [0.0, 1.0],
               colors: [
-
                 Color(0xFF1B4A69),
                 Color(0xFF3593D1),
-
               ],
             ),
-
           ),
-          child:  Stack(
+          child: Stack(
             children: [
               Positioned(
                 top: 0,
@@ -95,29 +104,29 @@ class _SplashScreenState extends State<SplashScreen> with
                   opacity: 1,
                   duration: Duration(seconds: 1),
                   child: Image(
-                    image: AssetImage("assets/images/splash_bg.png", ),
+                    image: AssetImage(
+                      "assets/images/splash_bg.png",
+                    ),
                     fit: BoxFit.fill,
                   ),
                 ),
               ),
-
-
               Center(
                 child: ZWidget.forwards(
-                  rotationX: rotationX!.value,
-                  rotationY: rotationY!.value,
-                  layers: 12,
-                  depth: 12,
-                  midChild:Container(
-                    height: 70,
-                    width: 300,
-                    child:  Image.asset("assets/images/abn_logo.png", fit: BoxFit.fill,)
-                  )
-                ),
+                    rotationX: rotationX!.value,
+                    rotationY: rotationY!.value,
+                    layers: 12,
+                    depth: 12,
+                    midChild: Container(
+                        height: 70,
+                        width: 300,
+                        child: Image.asset(
+                          "assets/images/abn_logo.png",
+                          fit: BoxFit.fill,
+                        ))),
               ),
             ],
-          )
-      ),
+          )),
     );
   }
 }

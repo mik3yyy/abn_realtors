@@ -6,16 +6,17 @@ import 'package:flutter_chat_list/chat_list.dart';
 import 'package:flutter_parsed_text/flutter_parsed_text.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 import 'package:v_chat_mention_controller/v_chat_mention_controller.dart';
-import '../../../provider/auth_provider.dart';
-import '../../../provider/main_provider.dart';
-import '../../../provider/messages_provider.dart';
-import '../../../settings/constants.dart';
-import '../../../utils/GridDummyScreen.dart';
+import '../../provider/auth_provider.dart';
+import '../../provider/main_provider.dart';
+import '../../provider/messages_provider.dart';
+import '../../settings/constants.dart';
+import '../../utils/GridDummyScreen.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({Key? key, required this.user}) : super(key: key);
@@ -96,9 +97,15 @@ class _ChatScreenState extends State<ChatScreen> {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  CollectionReference? guestChats;
+  CollectionReference? myChats;
   @override
   void initState() {
     super.initState();
+    var authprovider = Provider.of<AuthProvider>(context, listen: false);
+
+    guestChats = FirebaseFirestore.instance.collection(widget.user["email"]);
+    myChats = FirebaseFirestore.instance.collection(authprovider.email);
 
     getData();
     controller.onSearch = (str) async {
@@ -177,6 +184,53 @@ class _ChatScreenState extends State<ChatScreen> {
     var authprovider = Provider.of<AuthProvider>(context, listen: false);
     var listingprovider = Provider.of<MainProvider>(context, listen: true);
     var messagesprovider = Provider.of<MessagesProvider>(context, listen: true);
+    updateList() async {
+      await guestChats!.doc(authprovider.email).set({
+        "id": FirebaseAuth.instance.currentUser!.uid,
+        "name": authprovider.fullname,
+        "email": authprovider.email,
+        "image": authprovider.imageFile,
+        "isAgent": authprovider.agent,
+        "text": messagesprovider.type == messagesprovider.Type[0]
+            ? messagesprovider.text
+            : "<Image>",
+        "read": false,
+        "time": Timestamp.now()
+      });
+      await myChats!.doc(widget.user["email"]).set({
+        "id": widget.user.id,
+        "name": widget.user["fullname"],
+        "email": widget.user["email"],
+        "image": widget.user["image"],
+        "isAgent": widget.user["agent"],
+        "text": messagesprovider.type == messagesprovider.Type[0]
+            ? messagesprovider.text
+            : "<Image>",
+        "read": true,
+        "time": Timestamp.now()
+      });
+    }
+
+    sendMessage() async {
+      messagesprovider.type = messagesprovider.Type[0];
+      messagesprovider.text = controller.text;
+      messagesprovider.senderid = FirebaseAuth.instance.currentUser!.uid;
+      messagesprovider.receiverid = widget.user.id;
+      String text = controller.text;
+      setState(() {
+        controller.clear();
+      });
+
+      try {
+        String uid = Uuid().v4();
+        await chats.doc(uid).set(messagesprovider.sendMessage());
+      } catch (e) {
+        setState(() {
+          controller.text = text;
+        });
+      }
+      updateList();
+    }
 
     return Padding(
       padding: const EdgeInsets.all(0),
@@ -258,7 +312,6 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             ),
             Container(
-              // margin: EdgeInsets.only(left: 10),
               width: 40,
               height: 40,
               decoration: BoxDecoration(
@@ -350,6 +403,8 @@ class _ChatScreenState extends State<ChatScreen> {
                             offsetToShowScrollToTop: 0,
                             offsetFromUnreadTipToTop: 0,
                             itemBuilder: (BuildContext context, int index) {
+                              var user = Hive.box("abn").get("user");
+
                               bool isMe = chats[index]["senderid"] ==
                                   FirebaseAuth.instance.currentUser!.uid;
 
@@ -362,7 +417,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                   '${date.month}/${date.day}/${date.year}';
                               String formattedTime =
                                   '${date.hour}:${date.minute} ${date.hour > 11 ? "PM" : "AM"}';
-
+                              // print(isMe);
                               return Container(
                                 margin: EdgeInsets.all(10),
                                 child: Column(
@@ -420,10 +475,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                                 decoration:
                                                     TextDecoration.underline,
                                               ), // custom style to be applied to this matched text
-                                              onTap: (url) {
-                                                print("email");
-// do something here with passed url
-                                              }, // callback funtion when the text is tapped on
+                                              onTap:
+                                                  (url) {}, // callback funtion when the text is tapped on
                                             ),
                                             MatchText(
                                               type: ParsedType
@@ -601,36 +654,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               ),
                               if (controller.text.isNotEmpty)
                                 IconButton(
-                                  onPressed: () async {
-                                    messagesprovider.type =
-                                        messagesprovider.Type[0];
-                                    messagesprovider.text = controller.text;
-                                    messagesprovider.senderid =
-                                        FirebaseAuth.instance.currentUser!.uid;
-                                    messagesprovider.receiverid =
-                                        widget.user.id;
-
-                                    // print(messagesprovider.sendMessage());
-
-                                    String text = controller.text;
-                                    setState(() {
-                                      // logs.add(controller.markupText);
-                                      controller.clear();
-                                    });
-
-                                    try {
-                                      String uid = Uuid().v4();
-                                      await chats
-                                          .doc(uid)
-                                          .set(messagesprovider.sendMessage());
-                                      // QuerySnapshot chatSnapshot = await _firestore.collection('chats').get();
-                                      // id=  messagesprovider.chatid +"-"+ chatSnapshot.docs.toList().length.toString();
-                                    } catch (e) {
-                                      setState(() {
-                                        controller.text = text;
-                                      });
-                                    }
-                                  },
+                                  onPressed: sendMessage,
                                   icon: Icon(
                                     Icons.send,
                                     color: Constants.primaryColor,
@@ -683,239 +707,3 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 }
-
-
-//
-// ListTile(
-// title:
-// ParsedText(
-// text: logs[index],
-// style: const TextStyle(color: Colors.black87),
-// parse: <MatchText>[
-// MatchText(
-// type: ParsedType.EMAIL, // predefined type can be any of this ParsedTypes
-// style: TextStyle(
-// color: Colors.blue,
-//
-//
-// decoration: TextDecoration.underline,
-// ), // custom style to be applied to this matched text
-// onTap: (url) {
-//
-// print("email");
-// // do something here with passed url
-// }, // callback funtion when the text is tapped on
-// ),
-// MatchText(
-// type: ParsedType.URL, // predefined type can be any of this ParsedTypes
-// style: TextStyle(
-// color: Colors.blue,
-//
-//
-// decoration: TextDecoration.underline,
-// ), // custom style to be applied to this matched text
-// onTap: (url) {
-// print("url");
-// // do something here with passed url
-// }, // callback funtion when the text is tapped on
-// ),
-// MatchText(
-// type: ParsedType.PHONE, // predefined type can be any of this ParsedTypes
-// style: TextStyle(
-// color: Colors.blue,
-//
-//
-// decoration: TextDecoration.underline,
-//
-// ), // custom style to be applied to this matched text
-// onTap: (url) {
-// call(url);
-// print("phone");
-// // do something here with passed url
-// }, // callback funtion when the text is tapped on
-// ),
-//
-//
-// MatchText(
-// pattern: r"\[(@[^:]+):([^\]]+)\]",
-// style: const TextStyle(
-// color: Colors.blue,
-//
-//
-//
-// ),
-// renderWidget: ({required pattern, required text}) {
-// return Text(text);
-// },
-// // you must return a map with two keys
-// // [display] - the text you want to show to the user
-// // [value] - the value underneath it
-// renderText: ({required String str, required String pattern}) {
-// final map = <String, String>{};
-// final RegExp customRegExp =
-// RegExp(r"\[(@[^:]+):([^\]]+)\]");
-// final match = customRegExp.firstMatch(str);
-// map['display'] = match!.group(1)!;
-// return map;
-// },
-// onTap: (url) {
-// final customRegExp = RegExp(r"\[(@[^:]+):([^\]]+)\]");
-// final match = customRegExp.firstMatch(url)!;
-// final snackBar = SnackBar(
-// content: Text(
-// 'id is ${match.group(2)} name is ${match.group(1)}'),
-// duration: const Duration(seconds: 7),
-// );
-//
-// ScaffoldMessenger.of(context).showSnackBar(snackBar);
-// },
-// ),
-// ],
-//
-// ),
-// ),
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-// Row(
-// mainAxisAlignment:isMe? MainAxisAlignment.end: MainAxisAlignment.start,
-// children: [
-// Flexible(
-// child: Container(
-// // width: MediaQuery.of(context).size.width*0.7,
-//
-//
-//
-// margin: EdgeInsets.all(10),
-// padding: EdgeInsets.all(10),
-// decoration: BoxDecoration(
-// color: isMe? Constants.primaryColor: Constants.greyColor,
-//
-// borderRadius:isMe? BorderRadius.only(
-// topLeft: Radius.circular(30),
-// bottomLeft: Radius.circular(30),
-// bottomRight: Radius.circular(30),
-// ):  BorderRadius.only(
-// topLeft: Radius.circular(0),
-// bottomLeft: Radius.circular(30),
-// bottomRight: Radius.circular(30),
-// topRight: Radius.circular(30),
-// ),
-// ),
-// child: FittedBox(
-//
-// child: ParsedText(
-// text: chats[index]["text"],
-// maxLines: 10,
-//
-//
-// style:  TextStyle(color: isMe? Colors.white: Colors.black,fontSize: 24 ),
-// parse: <MatchText>[
-// MatchText(
-// type: ParsedType.EMAIL, // predefined type can be any of this ParsedTypes
-// style: TextStyle(
-// color: Colors.blue,
-//
-//
-// decoration: TextDecoration.underline,
-// ), // custom style to be applied to this matched text
-// onTap: (url) {
-//
-// print("email");
-// // do something here with passed url
-// }, // callback funtion when the text is tapped on
-// ),
-// MatchText(
-// type: ParsedType.URL, // predefined type can be any of this ParsedTypes
-// style: TextStyle(
-// color: Colors.blue,
-//
-//
-// decoration: TextDecoration.underline,
-// ), // custom style to be applied to this matched text
-// onTap: (url) {
-// print("url");
-// // do something here with passed url
-// }, // callback funtion when the text is tapped on
-// ),
-// MatchText(
-// type: ParsedType.PHONE, // predefined type can be any of this ParsedTypes
-// style: TextStyle(
-// color: Colors.blue,
-//
-//
-// decoration: TextDecoration.underline,
-//
-// ), // custom style to be applied to this matched text
-// onTap: (url) {
-// call(url);
-// print("phone");
-// // do something here with passed url
-// }, // callback funtion when the text is tapped on
-// ),
-//
-//
-// MatchText(
-// pattern: r"\[(@[^:]+):([^\]]+)\]",
-// style: const TextStyle(
-// color: Colors.blue,
-//
-//
-//
-// ),
-// renderWidget: ({required pattern, required text}) {
-// return Text(text);
-// },
-// // you must return a map with two keys
-// // [display] - the text you want to show to the user
-// // [value] - the value underneath it
-// renderText: ({required String str, required String pattern}) {
-// final map = <String, String>{};
-// final RegExp customRegExp =
-// RegExp(r"\[(@[^:]+):([^\]]+)\]");
-// final match = customRegExp.firstMatch(str);
-// map['display'] = match!.group(1)!;
-// return map;
-// },
-// onTap: (url) {
-// final customRegExp = RegExp(r"\[(@[^:]+):([^\]]+)\]");
-// final match = customRegExp.firstMatch(url)!;
-// final snackBar = SnackBar(
-// content: Text(
-// 'id is ${match.group(2)} name is ${match.group(1)}'),
-// duration: const Duration(seconds: 7),
-// );
-//
-// ScaffoldMessenger.of(context).showSnackBar(snackBar);
-// },
-// ),
-// ],
-// // softWrap: false,
-// // overflow: TextOverflow.ellipsis,
-//
-//
-// ),
-// fit: BoxFit.fitHeight,
-// ),
-//
-// ),
-// ),
-// ],
-// );

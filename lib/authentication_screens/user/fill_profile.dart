@@ -464,7 +464,7 @@ class _FillProfileState extends State<FillProfile> {
                               authprovider.location = value!;
                             },
                             validator: (String? value) {
-                              if (value!.isEmpty) {
+                              if (authprovider.location.isEmpty) {
                                 return 'enter your State';
                               } else {
                                 return null;
@@ -588,7 +588,7 @@ class _FillProfileState extends State<FillProfile> {
                               authprovider.lga = value!;
                             },
                             validator: (String? value) {
-                              if (value!.isEmpty) {
+                              if (authprovider.lga.isEmpty) {
                                 return 'enter your local government area';
                               } else {
                                 return null;

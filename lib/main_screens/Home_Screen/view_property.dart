@@ -1,6 +1,6 @@
 import 'dart:ffi';
 
-import 'package:abn_realtors/main_screens/Agents_main_screens/Agent_messages_screen/chart_screen.dart';
+import 'package:abn_realtors/main_screens/messages_screen/chart_screen.dart';
 import 'package:abn_realtors/utils/GridDummyScreen.dart';
 import 'package:abn_realtors/utils/property_card.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -11,9 +11,9 @@ import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:staggered_grid_view_flutter/widgets/staggered_grid_view.dart';
 import 'package:staggered_grid_view_flutter/widgets/staggered_tile.dart';
-import '../../../provider/auth_provider.dart';
-import '../../../provider/main_provider.dart';
-import '../../../settings/constants.dart';
+import '../../provider/auth_provider.dart';
+import '../../provider/main_provider.dart';
+import '../../settings/constants.dart';
 import 'package:intl/intl.dart';
 
 class ViewProperty extends StatefulWidget {
@@ -198,6 +198,9 @@ class _ViewPropertyState extends State<ViewProperty> {
                     ),
                   ),
                 ),
+              SizedBox(
+                height: 10,
+              ),
               Text(
                 widget.product["title"],
                 style: TextStyle(
@@ -485,54 +488,70 @@ class _ViewPropertyState extends State<ViewProperty> {
                               ),
                             )
                           : Text(""),
-                      subtitle: Text(
-                        "Agent in charge",
-                        style: TextStyle(
-                          color: listingprovider.getForegroundColor(),
-                        ),
-                      ),
-                      trailing: Container(
-                        // margin: EdgeInsets.only(left: 10),
-                        width: 40,
-                        height: 40,
+                      subtitle:
+                          agent != null && agent!["email"] != authprovider.email
+                              ? Text(
+                                  "Agent in charge",
+                                  style: TextStyle(
+                                    color: listingprovider.getForegroundColor(),
+                                  ),
+                                )
+                              : Text("I am in charge"),
+                      trailing: agent == null
+                          ? Container(
+                              height: 2,
+                              width: 2,
+                            )
+                          : agent!["email"] == authprovider.email
+                              ? Container(
+                                  height: 2,
+                                  width: 2,
+                                )
+                              : Container(
+                                  // margin: EdgeInsets.only(left: 10),
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                      color: Colors.lightBlueAccent.shade100,
+                                      borderRadius: BorderRadius.circular(10)),
+                                  child: Center(
+                                    child: IconButton(
+                                        onPressed: () {
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      ChatScreen(
+                                                          user: agent!)));
+                                        },
+                                        icon: Icon(
+                                          Icons.messenger_outline,
+                                          color: Constants.primaryColor,
+                                        )),
+                                  ),
+                                ),
+                    ),
+                  ),
+                  if (agent != null && agent!["email"] != authprovider.email)
+                    MaterialButton(
+                      onPressed: () {},
+                      padding: const EdgeInsets.only(top: 10.0),
+                      child: Container(
+                        height: 50,
                         decoration: BoxDecoration(
-                            color: Colors.lightBlueAccent.shade100,
-                            borderRadius: BorderRadius.circular(10)),
+                            color: Constants.primaryColor,
+                            border: Border.all(color: Constants.primaryColor),
+                            borderRadius: BorderRadius.circular(8)),
                         child: Center(
-                          child: IconButton(
-                              onPressed: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            ChatScreen(user: agent!)));
-                              },
-                              icon: Icon(
-                                Icons.messenger_outline,
-                                color: Constants.primaryColor,
-                              )),
+                          child: Text(
+                            "Book now",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  MaterialButton(
-                    onPressed: () {},
-                    padding: const EdgeInsets.only(top: 10.0),
-                    child: Container(
-                      height: 50,
-                      decoration: BoxDecoration(
-                          color: Constants.primaryColor,
-                          border: Border.all(color: Constants.primaryColor),
-                          borderRadius: BorderRadius.circular(8)),
-                      child: Center(
-                        child: Text(
-                          "Book now",
-                          style: TextStyle(
-                              color: Colors.white, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ),
-                  ),
                   SizedBox(
                     height: 20,
                   ),

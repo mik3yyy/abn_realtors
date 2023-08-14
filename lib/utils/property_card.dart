@@ -1,3 +1,4 @@
+import 'package:abn_realtors/provider/favourite_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -5,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../provider/auth_provider.dart';
 import '../provider/main_provider.dart';
 import '../settings/constants.dart';
+import 'package:hive/hive.dart';
 
 class PropertyCard extends StatefulWidget {
   const PropertyCard({Key? key, required this.product, required this.index})
@@ -18,9 +20,22 @@ class PropertyCard extends StatefulWidget {
 
 class _PropertyCardState extends State<PropertyCard> {
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
+  CollectionReference favouriteList =
+      FirebaseFirestore.instance.collection("favourite");
+  var abn = Hive.box('abn');
+
+  @override
   Widget build(BuildContext context) {
     var authprovider = Provider.of<AuthProvider>(context, listen: false);
     var listingprovider = Provider.of<MainProvider>(context, listen: true);
+    var favouriteprovider =
+        Provider.of<FavoriteProvider>(context, listen: true);
+    bool tapped = favouriteprovider.products.contains(widget.product["pid"]);
     Color color = listingprovider.lightMode
         ? Color(0xFFF6F6F6)
         : Colors.lightBlue.withOpacity(0.1);
@@ -32,6 +47,13 @@ class _PropertyCardState extends State<PropertyCard> {
       price = price.substring(0, price.length - 6) + "M";
     } else if (price.length > 3) {
       price = price.substring(0, price.length - 3) + "K";
+    }
+
+    void saveFavouriteList(List<String> products) async {
+      await favouriteList
+          .doc(authprovider.email)
+          .set({"email": authprovider.email, "list": products});
+      abn.put('products', products);
     }
 
     return Padding(
@@ -140,10 +162,25 @@ class _PropertyCardState extends State<PropertyCard> {
                         ),
                       ),
                     ),
-                    Icon(
-                      Icons.favorite_border,
-                      size: 20,
-                      color: listingprovider.getForegroundColor(),
+                    InkWell(
+                      onTap: () {
+                        // tapped = !tapped;
+
+                        setState(() {
+                          tapped = favouriteprovider
+                              .addorRemoveProduct(widget.product["pid"]);
+                        });
+                        saveFavouriteList(favouriteprovider.products);
+                      },
+                      child: Icon(
+                        tapped
+                            ? Icons.favorite_outlined
+                            : Icons.favorite_border,
+                        size: 25,
+                        color: tapped
+                            ? Colors.red
+                            : listingprovider.getForegroundColor(),
+                      ),
                     ),
                   ],
                 ),

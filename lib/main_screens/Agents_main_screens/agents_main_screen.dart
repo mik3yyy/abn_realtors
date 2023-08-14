@@ -1,9 +1,8 @@
 import 'package:abn_realtors/main_screens/Agents_main_screens/Agent_AddProperties_Screen/add_property_screen.dart';
-import 'package:abn_realtors/main_screens/Agents_main_screens/Agent_Home_Screen/agent_home_screen.dart';
-import 'package:abn_realtors/main_screens/Agents_main_screens/Agent_Search_Screen/agent_search_screen.dart';
-import 'package:abn_realtors/main_screens/Agents_main_screens/Agent_messages_screen/agent_messages_screen.dart';
-import 'package:abn_realtors/main_screens/Agents_main_screens/Agent_profile_screen/agent_profile_screen.dart';
-import 'package:abn_realtors/main_screens/Customer_main_screens/profile_screen/profile_screen.dart';
+import 'package:abn_realtors/main_screens/Home_Screen/home_screen.dart';
+import 'package:abn_realtors/main_screens/Search_Screen/search_screen.dart';
+import 'package:abn_realtors/main_screens/messages_screen/messages_screen.dart';
+import 'package:abn_realtors/main_screens/Profile_screen/profile_screen.dart';
 import 'package:abn_realtors/settings/constants.dart';
 import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.dart';
 import 'package:awesome_bottom_bar/awesome_bottom_bar.dart';
@@ -20,15 +19,10 @@ import 'package:water_drop_nav_bar/water_drop_nav_bar.dart';
 import '../../provider/auth_provider.dart';
 import '../../provider/main_provider.dart';
 import '../../provider/messages_provider.dart';
-import '../Customer_main_screens/Home_screen/home_screen.dart';
-import 'Agent_messages_screen/add_message_screen.dart';
 
-
+import '../messages_screen/add_message_screen.dart';
 
 ////////////////////////
-
-
-
 
 class AgentMainScreen extends StatefulWidget {
   const AgentMainScreen({Key? key}) : super(key: key);
@@ -40,36 +34,26 @@ class AgentMainScreen extends StatefulWidget {
 }
 
 class _AgentMainScreenState extends State<AgentMainScreen> {
-
-
   var abn = Hive.box('abn');
   int _selectedIndex = 0;
 
-
-
-  List<Widget> mainscreens=[
-
-    AgentHomeScreen(),
-    AgentSearchScreen(),
-
-    AgentMessagesScreen(),
-   AgentProfileScreen()
+  List<Widget> mainscreens = [
+    HomeScreen(),
+    SearchScreen(),
+    MessagesScreen(),
+    ProfileScreen()
   ];
   final GlobalKey<ScaffoldMessengerState> _scaffoldKey =
-  GlobalKey<ScaffoldMessengerState>();
-  CollectionReference chats =
-  FirebaseFirestore.instance.collection('chats');
+      GlobalKey<ScaffoldMessengerState>();
+  CollectionReference chats = FirebaseFirestore.instance.collection('chats');
   @override
   Widget build(BuildContext context) {
-
     var authprovider = Provider.of<AuthProvider>(context, listen: false);
     var listingprovider = Provider.of<MainProvider>(context, listen: true);
-
 
     return ScaffoldMessenger(
       key: _scaffoldKey,
       child: Scaffold(
-
         backgroundColor: listingprovider.getBackgroundColor(),
 
         body: Padding(
@@ -80,15 +64,12 @@ class _AgentMainScreenState extends State<AgentMainScreen> {
           backgroundColor: Constants.primaryColor,
           onPressed: () {
             showModalBottomSheet(
-
-              enableDrag:  false,
-
+              enableDrag: false,
               context: context,
-              backgroundColor:  Colors.black38.withOpacity(0),
+              backgroundColor: Colors.black38.withOpacity(0),
               isScrollControlled: true,
-              builder: (context) =>AddProperty(),
+              builder: (context) => AddProperty(),
             );
-
           },
           child: Center(
             child: Icon(Icons.add),
@@ -97,18 +78,15 @@ class _AgentMainScreenState extends State<AgentMainScreen> {
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         bottomNavigationBar: AnimatedBottomNavigationBar(
-
           icons: [
-           _selectedIndex==0?  Icons.home:Icons.home_outlined,
-            _selectedIndex==1?  Icons.search_sharp: Icons.search_sharp,
-            _selectedIndex==2?    Icons.mail: Icons.mail_outline_rounded,
-            _selectedIndex==3?  Icons.person: Icons.person_outline,
+            _selectedIndex == 0 ? Icons.home : Icons.home_outlined,
+            _selectedIndex == 1 ? Icons.search_sharp : Icons.search_sharp,
+            _selectedIndex == 2 ? Icons.mail : Icons.mail_outline_rounded,
+            _selectedIndex == 3 ? Icons.person : Icons.person_outline,
           ],
           activeColor: Constants.primaryColor,
           inactiveColor: Colors.grey,
           backgroundColor: listingprovider.getBackgroundColor(),
-
-
 
           activeIndex: _selectedIndex,
           gapLocation: GapLocation.center,
@@ -156,10 +134,7 @@ class _AgentMainScreenState extends State<AgentMainScreen> {
         //    _selectedIndex = index;
         //  }),
         // ),
-
-
       ),
     );
-
   }
 }
